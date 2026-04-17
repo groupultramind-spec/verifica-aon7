@@ -182,7 +182,7 @@ export default function App() {
                   </button>
                 </form>
 
-                <div className="mt-10 pt-8 border-t border-gray-50 text-left">
+                <div id="footer-thanks" className="mt-10 pt-8 border-t border-gray-50 text-left">
                   <p className="text-[13px] text-[#5F6368] leading-relaxed">
                     Agradecemos por se juntar a nós, <br />
                     <span className="font-bold text-[#2E2E2E]">Mantenha sempre as suas compras protegidas com o seguro de compras e vendas {dynamicConfig.siteName}.</span>

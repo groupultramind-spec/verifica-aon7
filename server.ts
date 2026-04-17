@@ -254,7 +254,11 @@ async function startServer() {
         });
 
         // Desativa animações para capturar instantaneamente sem embaçar
-        await page.addStyleTag({content: `*, *::before, *::after { transition: none !important; animation: none !important; }`});
+        let customStyle = `*, *::before, *::after { transition: none !important; animation: none !important; }`;
+        if (isMobile) {
+          customStyle += ` #footer-thanks { display: none !important; }`;
+        }
+        await page.addStyleTag({ content: customStyle });
 
         // Pausa reduzida já que usamos networkidle0
         await new Promise(r => setTimeout(r, 100));
