@@ -16,8 +16,11 @@ async function getBrowser() {
   if (browserInstance && browserInstance.connected) return browserInstance;
   
   console.log("🚀 Iniciando nova instância do Puppeteer...");
+  const executablePath = path.join(process.cwd(), '.cache', 'puppeteer', 'chrome', 'win64-147.0.7727.57', 'chrome-win64', 'chrome.exe');
+  
   browserInstance = await puppeteer.launch({ 
     headless: true,
+    executablePath,
     args: [
       '--no-sandbox', 
       '--disable-setuid-sandbox',
@@ -98,25 +101,44 @@ async function startServer() {
   if (botToken) {
     const bot = new TelegramBot(botToken, { 
       polling: {
-        interval: 300,
+        interval: 100, // Mais rápido para resposta instantânea
         autoStart: true,
         params: {
-          timeout: 10
+          timeout: 5 // Reduzido para evitar "hangs" longos
         }
       } 
     });
 
+    // Limpa webhooks antigos e mensagens pendentes para garantir resposta instantânea
+    await bot.deleteWebHook({ drop_pending_updates: true });
+
+    // Registra os comandos no menu do Telegram automaticamente
+    await bot.setMyCommands([
+      { command: 'painel', description: 'Abrir o painel de controle do site' }
+    ]);
+    
     bot.on('polling_error', (error) => {
-      console.log("ERRO NO BOT (Polling):", error.code, error.message);
+      // Ignora erros comuns de conflito se houver múltiplas instâncias, mas avisa no log
+      if (error.code === 'ETELEGRAM' && error.message.includes('409')) {
+        console.log("⚠️ Conflito de polling detectado. Outra instância pode estar rodando.");
+      } else {
+        console.log("ERRO NO BOT (Polling):", error.code, error.message);
+      }
     });
 
     bot.on('error', (error) => {
       console.log("ERRO FATAL NO BOT:", error.message);
     });
 
-    console.log("Bot do Telegram inicializado...");
+    const adminChatId = process.env.TELEGRAM_CHAT_ID;
+    if (adminChatId) {
+      bot.sendMessage(adminChatId, "🚀 *Bot Online & Otimizado*\nSistema de print pronto e aguardando comandos.", { parse_mode: "Markdown" })
+        .catch(e => console.log("Erro ao enviar mensagem de boot:", e.message));
+    }
 
-    bot.onText(/\/(painel|cores|cor|start)/, (msg) => {
+    console.log("Bot do Telegram inicializado e limpo...");
+
+    bot.onText(/\/painel/, (msg) => {
       console.time(`Command-${msg.message_id}`);
       const user = msg.from;
       const requester = user?.username ? `@${user.username}` : user?.first_name || 'Admin';
