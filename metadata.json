@@ -1,0 +1,6 @@
+{
+  "name": "Sistema de Verificação de E-mail",
+  "description": "Uma página profissional para verificação de e-mails com validação de domínios brasileiros e integração com Telegram.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
